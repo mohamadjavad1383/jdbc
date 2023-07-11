@@ -59,6 +59,28 @@ public class StudentController {
             if (!rs.next()) return "student id " + sId + " does not exist";
             if (!rs2.next()) return "course id " + cId + " does not exist";
             if (!rs3.next()) return "teacher id " + pId + " does not exist";
+            int cap = rs2.getInt("coursecapacity");
+
+            PreparedStatement ps4 = connection.prepareStatement("SELECT * FROM teachercourse where id = ?");
+            ps4.setString(1, pId + "-" + cId);
+            ResultSet rs4 = ps4.executeQuery();
+            if (!rs4.next()) return "course with ths teacher does not exist";
+
+
+            PreparedStatement ps6 = connection.prepareStatement("SELECT * FROM studentcourse where courseid = ?");
+            ps6.setString(1, pId + "-" + cId);
+            ResultSet rs6 = ps6.executeQuery();
+            int count = 0;
+            while (rs6.next()) {
+                if (rs6.getString("studentnumber").equals(sId))
+                    return "student have this lesson already";
+                count++;
+            }
+            if (count >= cap)
+                return "capacity is full";
+
+            
+
             PreparedStatement ps1 = connection.prepareStatement("INSERT INTO studentcourse VALUES(?, ?, ?)");
             ps1.setString(1, sId);
             ps1.setString(2, cId);
