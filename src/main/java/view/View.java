@@ -1,6 +1,8 @@
 package view;
 
-import controller.Controller;
+import controller.CourseController;
+import controller.StudentController;
+import controller.TeacherController;
 import enums.Commands;
 
 import java.sql.Connection;
@@ -55,55 +57,54 @@ public class View {
     }
 
     private void viewStudentCount(Connection connection) {
-        System.out.println(Controller.getInstance().viewStudentCount(connection));
+        System.out.println(CourseController.getInstance().viewStudentCount(connection));
     }
 
     private void viewStudentGpa(Matcher matcher, Connection connection) {
-        System.out.println(Controller.getInstance().viewStudentGpa(matcher.group("grade"), connection));
+        System.out.println(StudentController.getInstance().viewStudentGpa(matcher.group("grade"), connection));
     }
 
     private void viewAverage(Matcher matcher, Connection connection) {
-        System.out.println(Controller.getInstance().viewAverage(matcher.group("cId"), connection));
+        System.out.println(CourseController.getInstance().viewAverage(matcher.group("cId"), connection));
     }
 
     private void score(Matcher matcher, Connection connection) {
-        System.out.println(Controller.getInstance().score(matcher.group("sId"),
+        System.out.println(StudentController.getInstance().score(matcher.group("sId"),
                 matcher.group("cId"), matcher.group("grade"), connection));
     }
 
     private void changeFavourite(Matcher matcher, Connection connection) {
-        System.out.println(Controller.getInstance().changeFavourite(matcher.group("id"),
+        System.out.println(CourseController.getInstance().changeFavourite(matcher.group("id"),
                 matcher.group("favourite"), connection));
     }
 
     private void deleteCourse(Matcher matcher, Connection connection) {
-        System.out.println(Controller.getInstance().deleteCourse(matcher.group("sId"),
+        System.out.println(CourseController.getInstance().deleteCourse(matcher.group("sId"),
                 matcher.group("cId"), connection));
     }
 
     private void registerStudent(Matcher matcher, Connection connection) {
-        System.out.println(Controller.getInstance().registerStudent(matcher.group("sId"),
+        System.out.println(StudentController.getInstance().registerStudent(matcher.group("sId"),
                 matcher.group("cId"), connection));
     }
 
     private void acceptTeacher(Matcher matcher, Connection connection) {
-        System.out.println(Controller.getInstance().acceptTeacher(matcher.group("pId"),
+        System.out.println(TeacherController.getInstance().acceptTeacher(matcher.group("pId"),
                 matcher.group("cId"), connection));
     }
 
     private void addTeacher(Matcher matcher, Connection connection) {
-        System.out.println(Controller.getInstance().addTeacher(matcher.group("id"),
+        System.out.println(TeacherController.getInstance().addTeacher(matcher.group("id"),
                 matcher.group("name"), connection));
     }
 
     private void addCourse(Matcher matcher, Connection connection) {
-        System.out.println(Controller.getInstance().addCourse(matcher.group("id"),
+        System.out.println(CourseController.getInstance().addCourse(matcher.group("id"),
                 matcher.group("name"), Integer.parseInt(matcher.group("capacity")), connection));
     }
 
     private void addStudent(Matcher matcher, Connection connection) {
-        Controller controller = Controller.getInstance();
-        System.out.println(controller.addStudent(matcher.group("name"), matcher.group("id"),
+        System.out.println(StudentController.getInstance().addStudent(matcher.group("name"), matcher.group("id"),
                 matcher.group("favourite"), matcher.group("grade"), connection));
     }
 }
