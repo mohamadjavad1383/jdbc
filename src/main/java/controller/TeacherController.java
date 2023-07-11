@@ -5,9 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class TeacherController {
+public class TeacherController extends Controller{
     private static TeacherController instance;
-    private Connection connection;
 
     public void setConnection(Connection connection) {
         this.connection = connection;
@@ -64,11 +63,5 @@ public class TeacherController {
             e.printStackTrace();
         }
         return "something bad happened";
-    }
-
-    private ResultSet getResultSet(String id, Connection connection, String table) throws SQLException {
-        PreparedStatement ps = connection.prepareStatement("SELECT * FROM " + table + " where " + table +"Number = ?");
-        ps.setString(1, id);
-        return ps.executeQuery();
     }
 }
