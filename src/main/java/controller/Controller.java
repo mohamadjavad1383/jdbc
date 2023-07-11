@@ -160,11 +160,13 @@ public class Controller {
             ps1.setString(2, cId);
 
             try {
-                ps1.executeUpdate();
+                int num = ps1.executeUpdate();
+                if (num == 0)
+                    return "student does not have this course";
+                return "course deleted successfully";
             } catch (Exception e) {
                 return "couldn't add to db";
             }
-            return "course deleted successfully";
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -184,7 +186,7 @@ public class Controller {
             try {
                 ps1.executeUpdate();
             } catch (Exception e) {
-                return "couldn't add to db";
+                return "error";
             }
             return "favourite changed successfully";
         } catch (SQLException e) {

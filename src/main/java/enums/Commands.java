@@ -13,7 +13,7 @@ public enum Commands {
     CHANGE_FAVOURITE("change (?<id>\\d{8}) fave (?<favourite>\\d{1,8})"),
     SCORE("score (?<sId>\\d{8}) (?<cId>\\d{1,8}) (?<grade>\\d{1,2}\\.?\\d{1,2})"),
     VIEW_AVERAGE("view average for (?<cId>\\d{1,8})"),
-    VIEW_STUDENT_GPA("view student gpa (?<grade>\\d{1,2}\\.?\\d{1,2})"),
+    VIEW_STUDENT_GPA("view student gpa (?<grade>\\d{1,2}(\\.\\d{1,2}))?"),
     VIEW_STUDENT_FAV("view student count for each favourite course");
 
     private final String regex;
