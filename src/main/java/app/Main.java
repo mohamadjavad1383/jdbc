@@ -34,7 +34,7 @@ public class Main {
     }
 
     private static void connect() throws ClassNotFoundException {
-        Class.forName("org.postgresql.Driver");
+        Class.forName(Config.getInstance().classForName());
         try (Connection connection = DriverManager.getConnection(Config.getInstance().getUrl(),
                 Config.getInstance().getUsername(), Config.getInstance().getPassword())) {
             System.out.println("connected");

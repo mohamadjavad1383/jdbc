@@ -11,6 +11,9 @@ public class Config {
             instance = new Config();
         return instance;
     }
+    public String classForName() {
+        return "org.postgresql.Driver";
+    }
 
     public String getUsername() {
         return "postgres";
