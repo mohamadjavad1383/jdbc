@@ -7,6 +7,11 @@ import java.sql.SQLException;
 
 public class StudentController {
     private static StudentController instance;
+    private Connection connection;
+
+    public void setConnection(Connection connection) {
+        this.connection = connection;
+    }
 
     private StudentController() {
     }
@@ -17,11 +22,9 @@ public class StudentController {
         return instance;
     }
 
-    public String addStudent(String name, String id, String favourite, String grade, Connection connection) {
+    public String addStudent(String name, String id, String favourite, String grade) {
         try {
-            PreparedStatement ps = connection.prepareStatement("SELECT * FROM student where studentnumber = ?");
-            ps.setString(1, id);
-            ResultSet rs = ps.executeQuery();
+            ResultSet rs = getResultSet(id, connection, "student");
             if (rs.next()) return "id " + id + " already exist";
 
             if (Float.parseFloat(grade) > 20.0)
@@ -45,17 +48,11 @@ public class StudentController {
         return "something bad happened";
     }
 
-    public String registerStudent(String sId, String cId, String pId, Connection connection) {
+    public String registerStudent(String sId, String cId, String pId) {
         try {
-            PreparedStatement ps = connection.prepareStatement("SELECT * FROM student where studentNumber = ?");
-            PreparedStatement ps2 = connection.prepareStatement("SELECT * FROM course where courseNumber = ?");
-            PreparedStatement ps3 = connection.prepareStatement("SELECT * FROM teacher where teacherNumber = ?");
-            ps.setString(1, sId);
-            ps2.setString(1, cId);
-            ps3.setString(1, pId);
-            ResultSet rs = ps.executeQuery();
-            ResultSet rs2 = ps2.executeQuery();
-            ResultSet rs3 = ps3.executeQuery();
+            ResultSet rs = getResultSet(sId, connection, "student");
+            ResultSet rs2 = getResultSet(cId, connection, "course");
+            ResultSet rs3 = getResultSet(pId, connection, "teacher");
             if (!rs.next()) return "student id " + sId + " does not exist";
             if (!rs2.next()) return "course id " + cId + " does not exist";
             if (!rs3.next()) return "teacher id " + pId + " does not exist";
@@ -98,7 +95,7 @@ public class StudentController {
         return "something bad happened";
     }
 
-    public String viewStudentGpa(String grade, Connection connection) {
+    public String viewStudentGpa(String grade) {
         try {
             if (Float.parseFloat(grade) > 20.0)
                 return "invalid grade";
@@ -115,16 +112,12 @@ public class StudentController {
         return "something bad happened";
     }
 
-    public String score(String sId, String cId, String grade, Connection connection) {
+    public String score(String sId, String cId, String grade) {
         try {
-            PreparedStatement ps = connection.prepareStatement("SELECT * FROM student where studentNumber = ?");
-            ps.setString(1, sId);
-            ResultSet rs = ps.executeQuery();
+            ResultSet rs = getResultSet(sId, connection, "student");
             if (!rs.next()) return "student id " + sId + " does not exist";
 
-            PreparedStatement ps3 = connection.prepareStatement("SELECT * FROM course where courseNumber = ?");
-            ps3.setString(1, cId);
-            ResultSet rs2 = ps3.executeQuery();
+            ResultSet rs2 = getResultSet(cId, connection, "course");
             if (!rs2.next()) return "course id " + cId + " does not exist";
 
             PreparedStatement ps2 = connection.prepareStatement("UPDATE studentcourse SET grade = ? " +
@@ -145,6 +138,12 @@ public class StudentController {
             e.printStackTrace();
         }
         return "something bad happened";
+    }
+
+    private ResultSet getResultSet(String id, Connection connection, String table) throws SQLException {
+        PreparedStatement ps = connection.prepareStatement("SELECT * FROM " + table + " where " + table +"Number = ?");
+        ps.setString(1, id);
+        return ps.executeQuery();
     }
 
 }

@@ -7,6 +7,11 @@ import java.sql.SQLException;
 
 public class TeacherController {
     private static TeacherController instance;
+    private Connection connection;
+
+    public void setConnection(Connection connection) {
+        this.connection = connection;
+    }
 
     private TeacherController() {
     }
@@ -18,11 +23,9 @@ public class TeacherController {
     }
 
 
-    public String addTeacher(String id, String name, Connection connection) {
+    public String addTeacher(String id, String name) {
         try {
-            PreparedStatement ps = connection.prepareStatement("SELECT * FROM teacher where TeacherNumber = ?");
-            ps.setString(1, id);
-            ResultSet rs = ps.executeQuery();
+            ResultSet rs = getResultSet(id, connection, "teacher");
             if (rs.next()) return "id " + id + " already exist";
             PreparedStatement ps1 = connection.prepareStatement("INSERT INTO teacher VALUES(?, ?)");
             ps1.setString(1, id);
@@ -40,14 +43,10 @@ public class TeacherController {
         return "something bad happened";
     }
 
-    public String acceptTeacher(String pId, String cId, Connection connection) {
+    public String acceptTeacher(String pId, String cId) {
         try {
-            PreparedStatement ps = connection.prepareStatement("SELECT * FROM teacher where TeacherNumber = ?");
-            PreparedStatement ps2 = connection.prepareStatement("SELECT * FROM course where courseNumber = ?");
-            ps.setString(1, pId);
-            ps2.setString(1, cId);
-            ResultSet rs = ps.executeQuery();
-            ResultSet rs2 = ps2.executeQuery();
+            ResultSet rs = getResultSet(pId, connection, "teacher");
+            ResultSet rs2 = getResultSet(cId, connection, "course");
             if (!rs.next()) return "teacher id " + pId + " does not exist";
             if (!rs2.next()) return "course id " + cId + " does not exist";
             PreparedStatement ps1 = connection.prepareStatement("INSERT INTO teachercourse VALUES(?, ?, ?)");
@@ -65,5 +64,11 @@ public class TeacherController {
             e.printStackTrace();
         }
         return "something bad happened";
+    }
+
+    private ResultSet getResultSet(String id, Connection connection, String table) throws SQLException {
+        PreparedStatement ps = connection.prepareStatement("SELECT * FROM " + table + " where " + table +"Number = ?");
+        ps.setString(1, id);
+        return ps.executeQuery();
     }
 }

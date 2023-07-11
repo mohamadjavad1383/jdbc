@@ -4,11 +4,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 
 public class CourseController {
     private static CourseController instance;
+    private Connection connection;
+
+    public void setConnection(Connection connection) {
+        this.connection = connection;
+    }
 
     private CourseController() {
     }
@@ -19,11 +22,9 @@ public class CourseController {
         return instance;
     }
 
-    public String addCourse(String id, String name, int capacity, Connection connection) {
+    public String addCourse(String id, String name, int capacity) {
         try {
-            PreparedStatement ps = connection.prepareStatement("SELECT * FROM course where CourseNumber = ?");
-            ps.setString(1, id);
-            ResultSet rs = ps.executeQuery();
+            ResultSet rs = getResultSet(id, connection, "course");
             if (rs.next()) return "id " + id + " already exist";
             PreparedStatement ps1 = connection.prepareStatement("INSERT INTO course VALUES(?, ?, ?)");
             ps1.setString(1, id);
@@ -42,20 +43,16 @@ public class CourseController {
         return "something bad happened";
     }
 
-    public String deleteCourse(String sId, String cId, Connection connection) {
+    public String deleteCourse(String sId, String cId, String pId) {
         try {
-            PreparedStatement ps = connection.prepareStatement("SELECT * FROM student where StudentNumber = ?");
-            PreparedStatement ps2 = connection.prepareStatement("SELECT * FROM course where courseNumber = ?");
-            ps.setString(1, sId);
-            ps2.setString(1, cId);
-            ResultSet rs = ps.executeQuery();
-            ResultSet rs2 = ps2.executeQuery();
+            ResultSet rs = getResultSet(sId, connection, "student");
+            ResultSet rs2 = getResultSet(cId, connection, "course");
             if (!rs.next()) return "student id " + sId + " does not exist";
             if (!rs2.next()) return "course id " + cId + " does not exist";
             PreparedStatement ps1 = connection.prepareStatement("DELETE FROM studentcourse where" +
-                    " studentnumber = ? and coursenumber = ?");
+                    " studentnumber = ? and courseid = ?");
             ps1.setString(1, sId);
-            ps1.setString(2, cId);
+            ps1.setString(2, pId + "-" + cId);
 
             try {
                 int num = ps1.executeUpdate();
@@ -71,11 +68,9 @@ public class CourseController {
         return "something bad happened";
     }
 
-    public String changeFavourite(String id, String favourite, Connection connection) {
+    public String changeFavourite(String id, String favourite) {
         try {
-            PreparedStatement ps = connection.prepareStatement("SELECT * FROM student where studentNumber = ?");
-            ps.setString(1, id);
-            ResultSet rs = ps.executeQuery();
+            ResultSet rs = getResultSet(id, connection, "student");
             if (!rs.next()) return "student id " + id + " does not exist";
             PreparedStatement ps1 = connection.prepareStatement("UPDATE student SET favourite = ? WHERE studentnumber = ?");
             ps1.setString(1, favourite);
@@ -93,25 +88,13 @@ public class CourseController {
         return "something bad happened";
     }
 
-    public String viewStudentCount(Connection connection) {
+    public String viewStudentCount() {
         try {
-            Map<String, Integer> map = new HashMap<>();
-            PreparedStatement ps = connection.prepareStatement("SELECT * FROM course");
+            PreparedStatement ps = connection.prepareStatement("SELECT courseid, count(distinct studentnumber) as num FROM studentcourse group by courseid");
             ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                String course = rs.getString("coursenumber");
-                PreparedStatement ps1 = connection.prepareStatement("SELECT * FROM student where favourite = ?");
-                ps1.setString(1, course);
-                ResultSet rs1 = ps1.executeQuery();
-                int count = 0;
-                while (rs1.next())
-                    count++;
-                map.put(course, count);
-            }
             StringBuilder stringBuilder = new StringBuilder();
-            for (Map.Entry<String, Integer> entry : map.entrySet())
-                stringBuilder.append("course: ").append(entry.getKey()).
-                        append("  num: ").append(entry.getValue()).append("\n");
+            while (rs.next())
+                stringBuilder.append("course: " + rs.getString("courseid") + "  num: " + rs.getInt("num") + "\n");
             return String.valueOf(stringBuilder);
 
         } catch (SQLException e) {
@@ -120,21 +103,19 @@ public class CourseController {
         return "something bad happened";
     }
 
-    public String viewAverage(String cId, Connection connection) {
+    public String viewAverage(String cId, String pId) {
         try {
-            PreparedStatement ps = connection.prepareStatement("SELECT * FROM course where courseNumber = ?");
-            ps.setString(1, cId);
-            ResultSet rs = ps.executeQuery();
+            ResultSet rs = getResultSet(cId, connection, "course");
             if (!rs.next()) return "course id " + cId + " does not exist";
             PreparedStatement ps1 = connection.prepareStatement("SELECT AVG(grade) FROM studentcourse " +
-                    "WHERE coursenumber = ?");
-            ps1.setString(1, cId);
+                    "WHERE courseid = ?");
+            ps1.setString(1, pId + "-" + cId);
 
             try {
                 ResultSet rs1 = ps1.executeQuery();
                 if (!rs1.next())
                     return "no one has this course";
-                return "avg is " + ((int)(rs1.getFloat("avg") * 100) / 100.0);
+                return "avg is " + ((int) (rs1.getFloat("avg") * 100) / 100.0);
             } catch (Exception e) {
                 return "couldn't add to db";
             }
@@ -143,4 +124,11 @@ public class CourseController {
         }
         return "something bad happened";
     }
+
+    private ResultSet getResultSet(String id, Connection connection, String table) throws SQLException {
+        PreparedStatement ps = connection.prepareStatement("SELECT * FROM " + table + " where " + table +"Number = ?");
+        ps.setString(1, id);
+        return ps.executeQuery();
+    }
+
 }
