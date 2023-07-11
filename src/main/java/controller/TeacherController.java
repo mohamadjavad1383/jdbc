@@ -50,9 +50,10 @@ public class TeacherController {
             ResultSet rs2 = ps2.executeQuery();
             if (!rs.next()) return "teacher id " + pId + " does not exist";
             if (!rs2.next()) return "course id " + cId + " does not exist";
-            PreparedStatement ps1 = connection.prepareStatement("INSERT INTO teachercourse VALUES(?, ?)");
+            PreparedStatement ps1 = connection.prepareStatement("INSERT INTO teachercourse VALUES(?, ?, ?)");
             ps1.setString(1, pId);
             ps1.setString(2, cId);
+            ps1.setString(3, pId + "-" + cId);
 
             try {
                 ps1.executeUpdate();

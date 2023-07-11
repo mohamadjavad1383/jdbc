@@ -85,7 +85,7 @@ public class View {
 
     private void registerStudent(Matcher matcher, Connection connection) {
         System.out.println(StudentController.getInstance().registerStudent(matcher.group("sId"),
-                matcher.group("cId"), connection));
+                matcher.group("cId"), matcher.group("pId"), connection));
     }
 
     private void acceptTeacher(Matcher matcher, Connection connection) {

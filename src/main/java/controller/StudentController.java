@@ -45,19 +45,24 @@ public class StudentController {
         return "something bad happened";
     }
 
-    public String registerStudent(String sId, String cId, Connection connection) {
+    public String registerStudent(String sId, String cId, String pId, Connection connection) {
         try {
             PreparedStatement ps = connection.prepareStatement("SELECT * FROM student where studentNumber = ?");
             PreparedStatement ps2 = connection.prepareStatement("SELECT * FROM course where courseNumber = ?");
+            PreparedStatement ps3 = connection.prepareStatement("SELECT * FROM teacher where teacherNumber = ?");
             ps.setString(1, sId);
             ps2.setString(1, cId);
+            ps3.setString(1, pId);
             ResultSet rs = ps.executeQuery();
             ResultSet rs2 = ps2.executeQuery();
+            ResultSet rs3 = ps3.executeQuery();
             if (!rs.next()) return "student id " + sId + " does not exist";
             if (!rs2.next()) return "course id " + cId + " does not exist";
-            PreparedStatement ps1 = connection.prepareStatement("INSERT INTO studentcourse VALUES(?, ?)");
+            if (!rs3.next()) return "teacher id " + pId + " does not exist";
+            PreparedStatement ps1 = connection.prepareStatement("INSERT INTO studentcourse VALUES(?, ?, ?)");
             ps1.setString(1, sId);
             ps1.setString(2, cId);
+            ps1.setString(3, pId + "-" + cId);
 
             try {
                 ps1.executeUpdate();
