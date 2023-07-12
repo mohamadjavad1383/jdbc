@@ -9,8 +9,8 @@ public abstract class Controller {
     protected Connection connection;
 
     protected ResultSet getResultSet(String id, Connection connection, String table) throws SQLException {
-        PreparedStatement ps = connection.prepareStatement("SELECT * FROM " + table + " where " + table +"Number = ?");
-        ps.setString(1, id);
-        return ps.executeQuery();
+        PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM " + table + " where " + table +"Number = ?");
+        preparedStatement.setString(1, id);
+        return preparedStatement.executeQuery();
     }
 }

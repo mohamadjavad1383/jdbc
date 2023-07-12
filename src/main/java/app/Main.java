@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
-    public static List<Command> commands;
     public static void main(String[] args) {
         createCommands();
         try {
@@ -19,7 +18,7 @@ public class Main {
     }
 
     private static void createCommands() {
-        commands = new ArrayList<>();
+        List<Command> commands = new ArrayList<>();
         commands.add(new AcceptTeacherCommand());
         commands.add(new AddCourseCommand());
         commands.add(new AddStudentCommand());
@@ -31,12 +30,15 @@ public class Main {
         commands.add(new ViewFavouriteCommand());
         commands.add(new ViewGpaCommand());
         commands.add(new ExitCommand());
+        View.getInstance().setCommands(commands);
     }
 
     private static void connect() throws ClassNotFoundException {
-        Class.forName(Config.getInstance().classForName());
-        try (Connection connection = DriverManager.getConnection(Config.getInstance().getUrl(),
-                Config.getInstance().getUsername(), Config.getInstance().getPassword())) {
+        Config config = new Config("org.postgresql.Driver", "postgres",
+                "1274335299" ,"jdbc:postgresql://localhost:5432/university");
+        Class.forName(config.getClassForName());
+        try (Connection connection = DriverManager.getConnection(config.getUrl(),
+                config.getUsername(), config.getPassword())) {
             System.out.println("connected");
             View.getInstance().run(connection);
         } catch (SQLException e) {

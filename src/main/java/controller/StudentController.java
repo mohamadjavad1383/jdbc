@@ -23,20 +23,20 @@ public class StudentController extends Controller{
 
     public String addStudent(String name, String id, String favourite, String grade) {
         try {
-            ResultSet rs = getResultSet(id, connection, "student");
-            if (rs.next()) return "id " + id + " already exist";
+            ResultSet studentResult = getResultSet(id, connection, "student");
+            if (studentResult.next()) return "id " + id + " already exist";
 
             if (Float.parseFloat(grade) > 20.0)
                 return "grade is not valid";
 
-            PreparedStatement ps1 = connection.prepareStatement("INSERT INTO student VALUES(?, ?, ?, ?)");
-            ps1.setString(1, id);
-            ps1.setString(2, favourite);
-            ps1.setString(3, name);
-            ps1.setFloat(4, Float.parseFloat(grade));
+            PreparedStatement studentQuery = connection.prepareStatement("INSERT INTO student VALUES(?, ?, ?, ?)");
+            studentQuery.setString(1, id);
+            studentQuery.setString(2, favourite);
+            studentQuery.setString(3, name);
+            studentQuery.setFloat(4, Float.parseFloat(grade));
 
             try {
-                ps1.executeUpdate();
+                studentQuery.executeUpdate();
             } catch (Exception e) {
                 return "couldn't add to db";
             }
@@ -49,41 +49,28 @@ public class StudentController extends Controller{
 
     public String registerStudent(String sId, String cId, String pId) {
         try {
-            ResultSet rs = getResultSet(sId, connection, "student");
-            ResultSet rs2 = getResultSet(cId, connection, "course");
-            ResultSet rs3 = getResultSet(pId, connection, "teacher");
-            if (!rs.next()) return "student id " + sId + " does not exist";
-            if (!rs2.next()) return "course id " + cId + " does not exist";
-            if (!rs3.next()) return "teacher id " + pId + " does not exist";
-            int cap = rs2.getInt("coursecapacity");
+            ResultSet studentResult = getResultSet(sId, connection, "student");
+            ResultSet courseResult = getResultSet(cId, connection, "course");
+            ResultSet teacherResult = getResultSet(pId, connection, "teacher");
+            if (!studentResult.next()) return "student id " + sId + " does not exist";
+            if (!courseResult.next()) return "course id " + cId + " does not exist";
+            if (!teacherResult.next()) return "teacher id " + pId + " does not exist";
+            int cap = courseResult.getInt("coursecapacity");
 
-            PreparedStatement ps4 = connection.prepareStatement("SELECT * FROM teachercourse where id = ?");
-            ps4.setString(1, pId + "-" + cId);
-            ResultSet rs4 = ps4.executeQuery();
-            if (!rs4.next()) return "course with ths teacher does not exist";
+            if (checkCourseAndTeacher(cId, pId) != null) return checkCourseAndTeacher(cId, pId);
 
-
-            PreparedStatement ps6 = connection.prepareStatement("SELECT * FROM studentcourse where courseid = ?");
-            ps6.setString(1, pId + "-" + cId);
-            ResultSet rs6 = ps6.executeQuery();
-            int count = 0;
-            while (rs6.next()) {
-                if (rs6.getString("studentnumber").equals(sId))
-                    return "student have this lesson already";
-                count++;
-            }
+            Integer count = getCount(sId, cId, pId);
+            if (count == null) return "student have this lesson already";
             if (count >= cap)
                 return "capacity is full";
 
-            
-
-            PreparedStatement ps1 = connection.prepareStatement("INSERT INTO studentcourse VALUES(?, ?, ?)");
-            ps1.setString(1, sId);
-            ps1.setString(2, cId);
-            ps1.setString(3, pId + "-" + cId);
+            PreparedStatement studentCourseQuery = connection.prepareStatement("INSERT INTO studentcourse VALUES(?, ?, ?)");
+            studentCourseQuery.setString(1, sId);
+            studentCourseQuery.setString(2, cId);
+            studentCourseQuery.setString(3, pId + "-" + cId);
 
             try {
-                ps1.executeUpdate();
+                studentCourseQuery.executeUpdate();
             } catch (Exception e) {
                 return "couldn't add to db";
             }
@@ -94,15 +81,36 @@ public class StudentController extends Controller{
         return "something bad happened";
     }
 
+    private String checkCourseAndTeacher(String cId, String pId) throws SQLException {
+        PreparedStatement teacherCourseQuery = connection.prepareStatement("SELECT * FROM teachercourse where id = ?");
+        teacherCourseQuery.setString(1, pId + "-" + cId);
+        ResultSet rs4 = teacherCourseQuery.executeQuery();
+        if (!rs4.next()) return "course with ths teacher does not exist";
+        return null;
+    }
+
+    private Integer getCount(String sId, String cId, String pId) throws SQLException {
+        PreparedStatement studentCourseQuery = connection.prepareStatement("SELECT * FROM studentcourse where courseid = ?");
+        studentCourseQuery.setString(1, pId + "-" + cId);
+        ResultSet rs6 = studentCourseQuery.executeQuery();
+        int count = 0;
+        while (rs6.next()) {
+            if (rs6.getString("studentnumber").equals(sId))
+                return null;
+            count++;
+        }
+        return count;
+    }
+
     public String viewStudentGpa(String grade) {
         try {
             if (Float.parseFloat(grade) > 20.0)
                 return "invalid grade";
-            PreparedStatement ps = connection.prepareStatement("SELECT * FROM student where grade >= ?");
-            ps.setFloat(1, Float.parseFloat(grade));
-            ResultSet rs = ps.executeQuery();
+            PreparedStatement studentQuery = connection.prepareStatement("SELECT * FROM student where grade >= ?");
+            studentQuery.setFloat(1, Float.parseFloat(grade));
+            ResultSet studentResult = studentQuery.executeQuery();
             int count = 0;
-            while (rs.next())
+            while (studentResult.next())
                 count++;
             return String.valueOf(count);
         } catch (SQLException e) {
@@ -113,20 +121,20 @@ public class StudentController extends Controller{
 
     public String score(String sId, String cId, String grade) {
         try {
-            ResultSet rs = getResultSet(sId, connection, "student");
-            if (!rs.next()) return "student id " + sId + " does not exist";
+            ResultSet studentResult = getResultSet(sId, connection, "student");
+            if (!studentResult.next()) return "student id " + sId + " does not exist";
 
-            ResultSet rs2 = getResultSet(cId, connection, "course");
-            if (!rs2.next()) return "course id " + cId + " does not exist";
+            ResultSet courseResult = getResultSet(cId, connection, "course");
+            if (!courseResult.next()) return "course id " + cId + " does not exist";
 
-            PreparedStatement ps2 = connection.prepareStatement("UPDATE studentcourse SET grade = ? " +
+            PreparedStatement studentCourseQuery = connection.prepareStatement("UPDATE studentcourse SET grade = ? " +
                     "WHERE studentnumber = ? and coursenumber = ?");
-            ps2.setFloat(1, Float.parseFloat(grade));
-            ps2.setString(2, sId);
-            ps2.setString(3, cId);
+            studentCourseQuery.setFloat(1, Float.parseFloat(grade));
+            studentCourseQuery.setString(2, sId);
+            studentCourseQuery.setString(3, cId);
 
             try {
-                int num = ps2.executeUpdate();
+                int num = studentCourseQuery.executeUpdate();
                 if (num == 0)
                     return "student does not have this course";
             } catch (Exception e) {

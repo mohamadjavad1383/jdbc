@@ -24,14 +24,14 @@ public class TeacherController extends Controller{
 
     public String addTeacher(String id, String name) {
         try {
-            ResultSet rs = getResultSet(id, connection, "teacher");
-            if (rs.next()) return "id " + id + " already exist";
-            PreparedStatement ps1 = connection.prepareStatement("INSERT INTO teacher VALUES(?, ?)");
-            ps1.setString(1, id);
-            ps1.setString(2, name);
+            ResultSet teacherResult = getResultSet(id, connection, "teacher");
+            if (teacherResult.next()) return "id " + id + " already exist";
+            PreparedStatement teacherQuery = connection.prepareStatement("INSERT INTO teacher VALUES(?, ?)");
+            teacherQuery.setString(1, id);
+            teacherQuery.setString(2, name);
 
             try {
-                ps1.executeUpdate();
+                teacherQuery.executeUpdate();
             } catch (Exception e) {
                 return "couldn't add to db";
             }
@@ -44,17 +44,17 @@ public class TeacherController extends Controller{
 
     public String acceptTeacher(String pId, String cId) {
         try {
-            ResultSet rs = getResultSet(pId, connection, "teacher");
-            ResultSet rs2 = getResultSet(cId, connection, "course");
-            if (!rs.next()) return "teacher id " + pId + " does not exist";
-            if (!rs2.next()) return "course id " + cId + " does not exist";
-            PreparedStatement ps1 = connection.prepareStatement("INSERT INTO teachercourse VALUES(?, ?, ?)");
-            ps1.setString(1, pId);
-            ps1.setString(2, cId);
-            ps1.setString(3, pId + "-" + cId);
+            ResultSet teacherResult = getResultSet(pId, connection, "teacher");
+            ResultSet courseResult = getResultSet(cId, connection, "course");
+            if (!teacherResult.next()) return "teacher id " + pId + " does not exist";
+            if (!courseResult.next()) return "course id " + cId + " does not exist";
+            PreparedStatement teacherCourseQuery = connection.prepareStatement("INSERT INTO teachercourse VALUES(?, ?, ?)");
+            teacherCourseQuery.setString(1, pId);
+            teacherCourseQuery.setString(2, cId);
+            teacherCourseQuery.setString(3, pId + "-" + cId);
 
             try {
-                ps1.executeUpdate();
+                teacherCourseQuery.executeUpdate();
             } catch (Exception e) {
                 return "couldn't add to db";
             }

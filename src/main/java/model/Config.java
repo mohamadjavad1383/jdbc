@@ -1,27 +1,16 @@
 package model;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
 public class Config {
-    private static Config instance;
+    private String classForName;
 
-    private Config() {
-    }
+    private String username;
 
-    public static Config getInstance() {
-        if (instance == null)
-            instance = new Config();
-        return instance;
-    }
-    public String classForName() {
-        return "org.postgresql.Driver";
-    }
+    private String password;
 
-    public String getUsername() {
-        return "postgres";
-    }
-    public String getPassword() {
-        return "1274335299";
-    }
-    public String getUrl() {
-        return "jdbc:postgresql://localhost:5432/university";
-    }
+    private String url;
 }

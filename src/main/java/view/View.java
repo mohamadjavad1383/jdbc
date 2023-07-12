@@ -4,12 +4,15 @@ import app.Main;
 import controller.CourseController;
 import controller.StudentController;
 import controller.TeacherController;
+import model.Command;
 
 import java.sql.Connection;
+import java.util.List;
 import java.util.Scanner;
 
 public class View {
     private static View instance;
+    private List<Command> commands;
 
     private View() {
     }
@@ -28,11 +31,15 @@ public class View {
             Scanner scanner = new Scanner(System.in);
             String input = scanner.nextLine();
             try {
-                System.out.println(Main.commands.stream().filter(c -> c.getMatcher(input) != null)
+                System.out.println(this.commands.stream().filter(c -> c.getMatcher(input) != null)
                          .findFirst().get().call(input));
             } catch (Exception e) {
                 System.out.println("invalid command");
             }
         }
+    }
+
+    public void setCommands(List<Command> commands) {
+        this.commands = commands;
     }
 }
